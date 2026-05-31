@@ -1,0 +1,340 @@
+[
+    {
+        "id": "tab-mackiot",
+        "type": "tab",
+        "label": "MacKIoT - Ventilação Inteligente",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "mqtt-in-clima",
+        "type": "mqtt in",
+        "z": "tab-mackiot",
+        "name": "Recebe Clima",
+        "topic": "mackiot/sensor/clima",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "mqtt-broker-hivemq",
+        "inputs": 0,
+        "x": 150,
+        "y": 100,
+        "wires": [
+            [
+                "parse-clima"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-in-gas",
+        "type": "mqtt in",
+        "z": "tab-mackiot",
+        "name": "Recebe Gas",
+        "topic": "mackiot/sensor/gas",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "mqtt-broker-hivemq",
+        "inputs": 0,
+        "x": 150,
+        "y": 200,
+        "wires": [
+            [
+                "parse-gas"
+            ]
+        ]
+    },
+    {
+        "id": "parse-clima",
+        "type": "function",
+        "z": "tab-mackiot",
+        "name": "Parse Clima",
+        "func": "global.set('temperatura', msg.payload.temperatura);\nglobal.set('umidade', msg.payload.umidade);\nreturn msg;",
+        "outputs": 1,
+        "x": 350,
+        "y": 100,
+        "wires": [
+            [
+                "influx-clima",
+                "regra-negocio"
+            ]
+        ]
+    },
+    {
+        "id": "parse-gas",
+        "type": "function",
+        "z": "tab-mackiot",
+        "name": "Parse Gas",
+        "func": "global.set('ppm', msg.payload.ppm);\nreturn msg;",
+        "outputs": 1,
+        "x": 350,
+        "y": 200,
+        "wires": [
+            [
+                "influx-gas",
+                "regra-negocio"
+            ]
+        ]
+    },
+    {
+        "id": "influx-clima",
+        "type": "influxdb out",
+        "z": "tab-mackiot",
+        "influxdb": "1429a39af97c09f9",
+        "name": "Salva Clima",
+        "measurement": "clima",
+        "precision": "ms",
+        "retentionPolicy": "",
+        "database": "",
+        "retentionPolicyV18Flux": "",
+        "org": "9ba7fa808d485963",
+        "bucket": "bucket_dados",
+        "x": 570,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "influx-gas",
+        "type": "influxdb out",
+        "z": "tab-mackiot",
+        "influxdb": "1429a39af97c09f9",
+        "name": "Salva Gas",
+        "measurement": "gas",
+        "precision": "ms",
+        "retentionPolicy": "",
+        "database": "",
+        "retentionPolicyV18Flux": "",
+        "org": "9ba7fa808d485963",
+        "bucket": "bucket_dados",
+        "x": 570,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "regra-negocio",
+        "type": "function",
+        "z": "tab-mackiot",
+        "name": "Regra de Negócio",
+        "func": "var temp = global.get('temperatura') || 0;\nvar umid = global.get('umidade') || 0;\nvar ppm = global.get('ppm') || 0;\n\nvar nivel = 0;\nvar status = 'adequado';\n\nif (temp > 31 || umid > 70) {\n    nivel = 2;\n    status = 'critico';\n} else if (temp > 26 || umid > 60) {\n    nivel = 1;\n    status = 'atencao';\n}\n\nglobal.set('nivel', nivel);\nglobal.set('status', status);\n\nmsg.payload = String(nivel);\nmsg.status = status;\nmsg.temp = temp;\nmsg.umid = umid;\nmsg.ppm = ppm;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 300,
+        "wires": [
+            [
+                "verifica-alerta",
+                "openweather-trigger",
+                "mqtt-out-alerta"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-out-alerta",
+        "type": "mqtt out",
+        "z": "tab-mackiot",
+        "name": "Publica Alerta",
+        "topic": "mackiot/atuador/alerta",
+        "qos": "0",
+        "retain": false,
+        "broker": "mqtt-broker-hivemq",
+        "x": 1000,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "verifica-alerta",
+        "type": "function",
+        "z": "tab-mackiot",
+        "name": "Verifica se envia Telegram",
+        "func": "var nivel = global.get('nivel') || 0;\nif (nivel >= 1) {\n    msg.payload = {\n        chatId: 8776071430,\n        type: \"message\",\n        content: '⚠️ Alerta MacKIoT!\\n' +\n            'Status: ' + msg.status.toUpperCase() + '\\n' +\n            'Temperatura: ' + msg.temp + ' °C\\n' +\n            'Umidade: ' + msg.umid + ' %\\n' +\n            'Qualidade do ar: ' + msg.ppm + ' PPM'\n    };\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 300,
+        "wires": [
+            [
+                "telegram-out"
+            ]
+        ]
+    },
+    {
+        "id": "telegram-out",
+        "type": "telegram sender",
+        "z": "tab-mackiot",
+        "name": "Envia Telegram",
+        "bot": "c36f1c38aebe7699",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 1020,
+        "y": 300,
+        "wires": [
+            [
+                "debug-telegram"
+            ]
+        ]
+    },
+    {
+        "id": "debug-telegram",
+        "type": "debug",
+        "z": "tab-mackiot",
+        "name": "debug telegram",
+        "active": true,
+        "tosidebar": true,
+        "x": 1220,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "openweather-trigger",
+        "type": "function",
+        "z": "tab-mackiot",
+        "name": "Trigger OpenWeather",
+        "func": "return msg;",
+        "outputs": 1,
+        "x": 800,
+        "y": 400,
+        "wires": [
+            [
+                "openweather-req"
+            ]
+        ]
+    },
+    {
+        "id": "openweather-req",
+        "type": "http request",
+        "z": "tab-mackiot",
+        "name": "OpenWeather API",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://api.openweathermap.org/data/2.5/weather?q=Sao%20Paulo&appid=1607a8ce52984c5636fd5e6bb852831b&units=metric",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1020,
+        "y": 400,
+        "wires": [
+            [
+                "parse-openweather"
+            ]
+        ]
+    },
+    {
+        "id": "parse-openweather",
+        "type": "function",
+        "z": "tab-mackiot",
+        "name": "Parse OpenWeather",
+        "func": "var tempExt = msg.payload.main.temp;\nvar umidExt = msg.payload.main.humidity;\nvar vento = msg.payload.wind.speed;\nvar ceu = msg.payload.weather[0].description;\n\nglobal.set('tempExt', tempExt);\nglobal.set('umidExt', umidExt);\n\nmsg.payload = {\n    temperatura_externa: tempExt,\n    umidade_externa: umidExt,\n    vento: vento,\n    ceu: ceu\n};\n\nreturn msg;",
+        "outputs": 1,
+        "x": 1220,
+        "y": 400,
+        "wires": [
+            [
+                "influx-openweather",
+                "debug-openweather"
+            ]
+        ]
+    },
+    {
+        "id": "influx-openweather",
+        "type": "influxdb out",
+        "z": "tab-mackiot",
+        "influxdb": "1429a39af97c09f9",
+        "name": "Salva OpenWeather",
+        "measurement": "clima_externo",
+        "precision": "ms",
+        "retentionPolicy": "",
+        "database": "",
+        "retentionPolicyV18Flux": "",
+        "org": "9ba7fa808d485963",
+        "bucket": "bucket_dados",
+        "x": 1440,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "debug-openweather",
+        "type": "debug",
+        "z": "tab-mackiot",
+        "name": "debug openweather",
+        "active": true,
+        "tosidebar": true,
+        "x": 1440,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "mqtt-broker-hivemq",
+        "type": "mqtt-broker",
+        "name": "HiveMQ",
+        "broker": "broker.hivemq.com",
+        "port": 1883,
+        "clientid": "nodered-mackiot",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true
+    },
+    {
+        "id": "1429a39af97c09f9",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": 8086,
+        "protocol": "http",
+        "database": "database",
+        "name": "InfluxDB Account",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "https://us-east-1-1.aws.cloud2.influxdata.com",
+        "timeout": 10,
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "c36f1c38aebe7699",
+        "type": "telegram bot",
+        "botname": "MacKIoT Bot",
+        "usernames": "",
+        "chatids": "8776071430",
+        "baseapiurl": "",
+        "testenvironment": false,
+        "updatemode": "polling",
+        "pollinterval": "1000",
+        "usesocks": false,
+        "sockshost": "",
+        "socksprotocol": "socks5",
+        "socksport": 6667,
+        "socksusername": "anonymous",
+        "sockspassword": "",
+        "bothost": "",
+        "botpath": "",
+        "localbothost": "0.0.0.0",
+        "localbotport": 8443,
+        "publicbotport": 8443,
+        "privatekey": "",
+        "certificate": "",
+        "useselfsignedcertificate": false,
+        "sslterminated": false,
+        "verboselogging": false
+    },
+    {
+        "id": "fd3cb207c48d6fac",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-influxdb": "0.7.0",
+            "node-red-contrib-telegrambot": "17.4.12"
+        }
+    }
+]
