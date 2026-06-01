@@ -24,7 +24,7 @@ O sistema monitora continuamente temperatura, umidade e qualidade do ar em salas
 
 ## Vídeo de demonstração
 
-Link do YouTube — [adicionar após gravação](https://youtu.be/lYi108S7h6E)
+Link do YouTube — [LINK](https://youtu.be/lYi108S7h6E)
 
 ## Integrantes
 
