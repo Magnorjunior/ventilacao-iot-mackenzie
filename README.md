@@ -24,10 +24,10 @@ O sistema monitora continuamente temperatura, umidade e qualidade do ar em salas
 
 ## Vídeo de demonstração
 
-[Link do YouTube] — adicionar após gravação
+Link do YouTube — [adicionar após gravação](https://youtu.be/lYi108S7h6E)
 
 ## Integrantes
 
-- Daniel Bartels de Carli
-- Luiz Filipe Batista dos Santos
-- Magno Rogério de Oliveira Junior
+- Daniel Bartels de Carli - 10436801
+- Luiz Filipe Batista dos Santos - 10438938
+- Magno Rogério de Oliveira Junior - 10439896
