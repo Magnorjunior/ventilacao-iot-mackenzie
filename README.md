@@ -11,7 +11,8 @@ Sistema IoT de monitoramento inteligente de ventilação para salas de aula, des
 6. Fluxo Node-RED e regra de negócio
 7. Estrutura do repositório
 8. Como recriar o projeto
-9. Integrantes
+9. Video
+10.Integrantes
 
 ---
 
@@ -158,9 +159,7 @@ Três measurements salvos no InfluxDB Cloud no bucket `bucket_dados`:
 
 [Link do YouTube] — [LINk](https://youtu.be/lYi108S7h6E)
 
-## 10.artigo final
-
-## 11. Integrantes
+## 10. Integrantes
 
 - Daniel Bartels de Carli — 10436801@mackenzista.com.br
 - Luiz Filipe Batista dos Santos — 10438938@mackenzista.com.br
