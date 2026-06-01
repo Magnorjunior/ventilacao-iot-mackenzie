@@ -38,7 +38,6 @@ O sistema monitora continuamente temperatura, umidade e qualidade do ar em salas
 
 ## 4. Arquitetura do projeto
 
-
  publica via MQTT
  broker.hivemq.com:1883
  Node-RED (AWS)
@@ -51,6 +50,9 @@ O sistema monitora continuamente temperatura, umidade e qualidade do ar em salas
  Dispositivo 2 (Wokwi)
  LED RGB + Buzzer
 
+ 
+<img width="639" height="481" alt="topologia" src="https://github.com/user-attachments/assets/d2072a26-e4ce-48de-8f83-ee4e741d919d" />
+
 
  ## 5. Dispositivos simulados
 
@@ -60,6 +62,8 @@ O sistema monitora continuamente temperatura, umidade e qualidade do ar em salas
 - Publica a cada 30 segundos nos tópicos:
   - `mackiot/sensor/clima` — temperatura e umidade em JSON
   - `mackiot/sensor/gas` — PPM e valor raw em JSON
+  
+<img width="638" height="362" alt="dispositivo1" src="https://github.com/user-attachments/assets/81181382-389c-4fa7-8d1a-44dc5f48fc37" />
 
 ### Dispositivo 2 — Atuação
 - LED vermelho, verde e azul
@@ -70,7 +74,12 @@ O sistema monitora continuamente temperatura, umidade e qualidade do ar em salas
   - `1` = ATENÇÃO → LED amarelo (vermelho + verde) acende
   - `2` = CRÍTICO → LED vermelho acende + buzzer ativado
 
+<img width="914" height="545" alt="dispostivo2" src="https://github.com/user-attachments/assets/44f88765-c23a-45f2-8296-842e6ae22d83" />
+
+
 ## 6. Fluxo Node-RED e regra de negócio
+
+<img width="1417" height="482" alt="fluxonodered" src="https://github.com/user-attachments/assets/210eb264-6e49-4da0-b697-1951a902a8f3" />
 
 O fluxo MacKIoT possui 4 etapas:
 
@@ -92,6 +101,7 @@ O nível calculado é publicado no tópico `mackiot/atuador/alerta`.
 **3. APIs externas**
 - OpenWeather consultada a cada leitura — retorna temperatura, umidade, vento e condição do céu de São Paulo
 - Telegram envia alerta automático quando nível >= 1
+
 
 **4. Armazenamento**
 Três measurements salvos no InfluxDB Cloud no bucket `bucket_dados`:
@@ -131,6 +141,13 @@ Três measurements salvos no InfluxDB Cloud no bucket `bucket_dados`:
 1. Crie conta em grafana.com
 2. Adicione InfluxDB como data source
 3. Crie dashboards com queries Flux nos measurements `clima`, `gas` e `clima_externo`
+   
+### Dash1
+<img width="2560" height="1035" alt="dashbboard1" src="https://github.com/user-attachments/assets/f839706a-5f0a-4202-8d72-0162e2b41410" />
+
+### dash2
+<img width="2557" height="1036" alt="dashboprad2" src="https://github.com/user-attachments/assets/318f0fd2-e574-4c6f-ab3b-c43d1a4b98d4" />
+
 
 ### Telegram
 1. Crie bot via @BotFather
